@@ -11,8 +11,9 @@ export class HashService extends Service<State> {
   state: State = { qrCodeData: '', qrCodeImage: '' };
 
   init() {
+    this.generateQrCodeData();
     setInterval(() => {
-      void this.generateQrCodeData();
+      this.generateQrCodeData();
     }, 5000);
   }
 

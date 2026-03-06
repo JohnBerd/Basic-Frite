@@ -2,12 +2,20 @@ import styled from 'styled-components';
 import { useService } from '../cortex/setup/setup';
 import { QRScanner } from './QRScanner';
 
-export function SetupTab() {
+type SetupTabProps = {
+  onBack: () => void;
+};
+
+export function SetupTab({ onBack }: SetupTabProps) {
   const { cardNumber, deviceId, guid, setDeviceId } = useService('form');
 
   return (
-    <Container>
-      <SectionTitle>Scanner un QR code</SectionTitle>
+    <PageWrapper>
+      <BackButton type="button" onClick={onBack} aria-label="Retour">
+        ✕
+      </BackButton>
+      <Container>
+        <SectionTitle>Scanner un QR code</SectionTitle>
       <QRScanner />
 
       <SectionTitle>Informations actuelles</SectionTitle>
@@ -42,13 +50,49 @@ export function SetupTab() {
         </FormGroup>
       </Form>
     </Container>
+    </PageWrapper>
   );
 }
+
+const PageWrapper = styled.div`
+  min-height: 100vh;
+  min-width: 100%;
+  background: #141414;
+  padding: 2rem 1.25rem 2rem;
+  box-sizing: border-box;
+  position: relative;
+`;
+
+const BackButton = styled.button`
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #e8e8e8;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover {
+    background: #2a2a2a;
+    color: #fff;
+  }
+`;
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-width: 540px;
+  margin: 0 auto;
+  padding-top: 2.5rem;
 `;
 
 const SectionTitle = styled.h2`

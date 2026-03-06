@@ -3,24 +3,41 @@ import { useService } from '../cortex/setup/setup';
 
 const REFRESH_INTERVAL_MS = 5000;
 
-export function QRCodeTab() {
+type QRCodeTabProps = {
+  onOpenSetup: () => void;
+};
+
+export function QRCodeTab({ onOpenSetup }: QRCodeTabProps) {
   const { qrCodeData, qrCodeImage } = useService('hash');
+  const { cardNumber } = useService('form');
 
   return (
     <Container>
-      <QRContainer>
-        {qrCodeImage ? (
-          <img src={qrCodeImage} alt="QR Code" />
-        ) : (
-          <Placeholder>Génération en cours…</Placeholder>
-        )}
-      </QRContainer>
+      <QRFrame>
+        <QRInner>
+          {qrCodeImage ? (
+            <img src={qrCodeImage} alt="QR Code" />
+          ) : (
+            <Placeholder>Generation en cours...</Placeholder>
+          )}
+        </QRInner>
+        <CardBadge>CardNumber {cardNumber}</CardBadge>
+      </QRFrame>
+
       {qrCodeData && (
         <ProgressBarTrack>
           <ProgressBarFill key={qrCodeData} $duration={REFRESH_INTERVAL_MS} />
         </ProgressBarTrack>
       )}
-      <DataText>{qrCodeData}</DataText>
+
+      <Title>TON QR CODE</Title>
+      <Description>
+        Le QR code te donne acces aux clubs et a tes extras. Lors du scan, garde une distance d'environ 20 cm.
+      </Description>
+
+      <InfoButton type="button" onClick={onOpenSetup}>
+        COMMENT FONCTIONNE LE CODE
+      </InfoButton>
     </Container>
   );
 }
@@ -29,24 +46,55 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 100vh;
+  min-width: 100%;
+  background: #faf5ef;
+  padding: 2rem 1.5rem 2.5rem;
+  box-sizing: border-box;
 `;
 
-const QRContainer = styled.div`
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 1.75rem;
+const QRFrame = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 3px solid #e85d04;
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 0.75rem;
+  background: #fff;
+  position: relative;
+`;
+
+const QRInner = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 300px;
-  height: 300px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  width: 220px;
+  height: 220px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 `;
 
 const Placeholder = styled.span`
-  color: #aaa;
+  color: #999;
   font-size: 0.9rem;
+`;
+
+const CardBadge = styled.div`
+  background: #e85d04;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.3em 1em;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  text-transform: uppercase;
 `;
 
 const grow = keyframes`
@@ -55,31 +103,57 @@ const grow = keyframes`
 `;
 
 const ProgressBarTrack = styled.div`
-  width: 250px;
+  width: 220px;
   height: 4px;
-  background: #2a2a2a;
+  background: #e0d5c8;
   border-radius: 2px;
   overflow: hidden;
 `;
 
 const ProgressBarFill = styled.div<{ $duration: number }>`
   height: 100%;
-  background: #646cff;
+  background: #e85d04;
   border-radius: 2px;
   animation: ${grow} ${({ $duration }) => $duration}ms linear forwards;
 `;
 
-const DataText = styled.p`
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 0.75rem;
-  color: #666;
-  word-break: break-all;
+const Title = styled.h2`
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 0.02em;
+  margin-top: 0.25rem;
+`;
+
+const Description = styled.p`
+  font-size: 0.85rem;
+  color: #555;
   text-align: center;
-  max-width: 100%;
+  line-height: 1.45;
   margin: 0;
-  padding: 0.6em 1em;
-  background: #1e1e1e;
+  max-width: 300px;
+`;
+
+const InfoButton = styled.button`
+  background: #5a4fcf;
+  color: #fff;
+  border: none;
   border-radius: 8px;
-  border: 1px solid #2a2a2a;
+  padding: 0.85em 2em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #4a3fbf;
+  }
+
+  &:active {
+    background: #3f35a8;
+  }
 `;
 

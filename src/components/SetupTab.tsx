@@ -7,7 +7,7 @@ type SetupTabProps = {
 };
 
 export function SetupTab({ onBack }: SetupTabProps) {
-  const { cardNumber, deviceId, guid, setDeviceId } = useService('form');
+  const { cardNumber, deviceId, guid, setDeviceId, setGuid } = useService('form');
 
   return (
     <PageWrapper>
@@ -38,6 +38,16 @@ export function SetupTab({ onBack }: SetupTabProps) {
 
       <SectionTitle>Modifier</SectionTitle>
       <Form onSubmit={(e) => e.preventDefault()}>
+        <FormGroup>
+          <Label htmlFor="guid">GUID</Label>
+          <Input
+            id="guid"
+            type="text"
+            placeholder="Ex: NJJ, 2L8..."
+            value={guid}
+            onChange={(e) => setGuid(e.target.value)}
+          />
+        </FormGroup>
         <FormGroup>
           <Label htmlFor="deviceId">Device ID</Label>
           <Input

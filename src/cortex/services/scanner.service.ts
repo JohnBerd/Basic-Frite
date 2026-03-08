@@ -1,14 +1,26 @@
 import { Html5Qrcode } from 'html5-qrcode';
 import { Service } from '../setup/base.service';
 
+const SCANNER_REGION_ID = 'qr-scanner-region';
+
 export type State = {
   scanning: boolean;
   error: string | null;
-  success: string | null;
+  verifyResult: 'match' | 'mismatch' | null;
+  tooltip: string;
+  iconColor: string;
 };
 
+const DEFAULT_TOOLTIP = 'Scanner un QR code pour importer les infos et vérifier le Device ID';
+
 export class ScannerService extends Service<State> {
-  state: State = { scanning: false, error: null, success: null };
+  state: State = {
+    scanning: false,
+    error: null,
+    verifyResult: null,
+    tooltip: DEFAULT_TOOLTIP,
+    iconColor: '#888',
+  };
 
   private scanner: Html5Qrcode | null = null;
 
@@ -26,37 +38,70 @@ export class ScannerService extends Service<State> {
     }
     this.scanner = null;
     this.state.scanning = false;
+    this.updateDerivedState();
   }
 
-  async startScanner(regionId: string) {
+  toggleScan() {
+    if (this.state.scanning) {
+      this.stopScanner();
+    } else {
+      this.startScan();
+    }
+  }
+
+  private async startScan() {
+    await this.stopScanner();
     this.state.error = null;
-    this.state.success = null;
+    this.state.verifyResult = null;
+    this.state.scanning = true;
+    this.updateDerivedState();
 
     try {
-      const scanner = new Html5Qrcode(regionId);
+      const scanner = new Html5Qrcode(SCANNER_REGION_ID);
       this.scanner = scanner;
-      this.state.scanning = true;
 
       await scanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 220, height: 220 } },
         (decodedText) => {
-          const result = this.parseQrData(decodedText);
-          if (result) {
-            this.state.success = `Carte ${result.cardNumber} — GUID ${result.guid}`;
-            const form = this.getService('form');
-            form.setCardNumber(result.cardNumber);
-            form.setGuid(result.guid);
-            this.stopScanner();
-          } else {
+          const parsed = this.parseQrData(decodedText);
+          if (!parsed) {
             this.state.error = 'QR code non reconnu (format attendu : GM2:…)';
+            return;
           }
+
+          const form = this.getService('form');
+          form.setCardNumber(parsed.cardNumber);
+          form.setGuid(parsed.guid);
+
+          const verification = this.getService('hash').verifyQrCode(decodedText);
+          this.state.verifyResult = verification?.valid ? 'match' : 'mismatch';
+
+          this.stopScanner();
         },
         () => {},
       );
     } catch {
       this.state.error = "Impossible d'accéder à la caméra";
       this.state.scanning = false;
+      this.updateDerivedState();
+    }
+  }
+
+  private updateDerivedState() {
+    if (this.state.scanning) {
+      this.state.tooltip = 'Scan en cours…';
+      this.state.iconColor = '#888';
+    } else if (this.state.verifyResult === 'match') {
+      this.state.tooltip = 'Device ID vérifié — le hash correspond';
+      this.state.iconColor = '#4ade80';
+    } else if (this.state.verifyResult === 'mismatch') {
+      this.state.tooltip = 'Device ID incorrect — le hash ne correspond pas';
+      this.state.iconColor = '#f87171';
+    } else {
+      this.state.tooltip = DEFAULT_TOOLTIP;
+      this.state.iconColor = '#888';
     }
   }
 }
+

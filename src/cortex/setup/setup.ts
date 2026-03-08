@@ -14,7 +14,7 @@ type StripBaseKeys<T> = Omit<T, keyof BaseService<unknown, unknown, unknown> | '
 type MethodsOnly<T> = { [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] };
 type PublicServiceAPI<T> = MethodsOnly<StripBaseKeys<T>> & ExtractState<T>;
 
-const hooks = createTypedHooks<Services>();
+export const hooks = createTypedHooks<Services>();
 export const useService = hooks.useService as <K extends ServiceName>(serviceName: K) => PublicServiceAPI<Services[K]>;
 
 export const createCore = (dependencies: Partial<Dependencies> = {}) => {

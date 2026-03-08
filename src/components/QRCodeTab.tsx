@@ -8,7 +8,7 @@ type QRCodeTabProps = {
 };
 
 export function QRCodeTab({ onOpenSetup }: QRCodeTabProps) {
-  const { qrCodeData, qrCodeImage } = useService('hash');
+  const { qrCodeImage } = useService('hash');
   const { cardNumber } = useService('form');
 
   return (
@@ -24,9 +24,9 @@ export function QRCodeTab({ onOpenSetup }: QRCodeTabProps) {
         <CardBadge>CardNumber {cardNumber}</CardBadge>
       </QRFrame>
 
-      {qrCodeData && (
+      {qrCodeImage && (
         <ProgressBarTrack>
-          <ProgressBarFill key={qrCodeData} $duration={REFRESH_INTERVAL_MS} />
+          <ProgressBarFill key={qrCodeImage} $duration={REFRESH_INTERVAL_MS} />
         </ProgressBarTrack>
       )}
 

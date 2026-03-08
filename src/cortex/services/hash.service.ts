@@ -34,6 +34,25 @@ export class HashService extends Service<State> {
     return Math.floor(Date.now() / 1000);
   }
 
+  verifyQrCode(qrData: string): { valid: boolean; expected: string; actual: string } | null {
+    const parts = qrData.split(':');
+    if (parts.length < 5 || parts[0] !== 'GM2') return null;
+
+    const [, cardNumber, guid, timestampStr, scannedHash] = parts;
+    const timestamp = Number(timestampStr);
+    if (isNaN(timestamp)) return null;
+
+    const deviceId = this.getService('form').state.deviceId;
+    const dataToHash = this.getDataToHash(cardNumber, guid, timestamp, deviceId);
+    const computedHash = crypto.SHA256(dataToHash).toString().toUpperCase().slice(-8);
+
+    return {
+      valid: computedHash === scannedHash,
+      expected: scannedHash,
+      actual: computedHash,
+    };
+  }
+
   private getDataToHash(cardNumber: string, guid: string, timestamp: number, deviceId: string) {
     return cardNumber + guid + timestamp + deviceId;
   }
